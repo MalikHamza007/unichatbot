@@ -1,0 +1,66 @@
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">
+      <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+        <path d="M2 17l10 5 10-5"/>
+        <path d="M2 12l10 5 10-5"/>
+      </svg>
+      <span class="logo-text">University AI Assistant</span>
+    </div>
+  </div>
+
+  <button class="new-chat-btn" (click)="onNewChat()">
+    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <line x1="12" y1="5" x2="12" y2="19"/>
+      <line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+    <span>New Chat</span>
+  </button>
+
+  <div class="chat-list-container">
+    <span class="chat-list-label">Recent Chats</span>
+    
+    @if (isLoading()) {
+    <div class="loading-container">
+      <app-loading />
+    </div>
+    } @else if (error()) {
+    <div class="error-container">
+      <p class="error-text">{{ error() }}</p>
+      <button class="retry-btn" (click)="loadChatSessions()">Try Again</button>
+    </div>
+    } @else {
+    <nav class="chat-list">
+      @for (chat of chatList(); track chat.session_id) {
+        <button 
+          class="chat-item"
+          [class.active]="isActive(chat.session_id)"
+          (click)="onSelectChat(chat.session_id)"
+        >
+          <svg class="chat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          <span class="chat-title">{{ getDisplayTitle(chat) }}</span>
+          <button 
+            class="delete-btn" 
+            (click)="onDeleteChat($event, chat.session_id)"
+            title="Delete chat"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            </svg>
+          </button>
+        </button>
+      } @empty {
+        <p class="empty-state">No conversations yet</p>
+      }
+    </nav>
+    }
+  </div>
+
+  <div class="sidebar-footer">
+    <span class="footer-text">Powered by AI Research</span>
+  </div>
+</aside>
