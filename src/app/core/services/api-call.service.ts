@@ -6,7 +6,7 @@ import { Observable, take, retry, Subject } from "rxjs";
   providedIn: 'root',
 })
 export class ApiCallService {
-   protected apiURL: string = 'http://127.0.0.1:8000'
+   protected apiURL: string = 'http://127.0.0.1:8000/api'
   protected http: HttpClient = inject(HttpClient);
   protected httpOptions: { headers: HttpHeaders } = {
     headers: new HttpHeaders({
