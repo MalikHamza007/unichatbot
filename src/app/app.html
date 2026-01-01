@@ -5,6 +5,7 @@
   <!-- Sidebar -->
   <aside class="sidebar-wrapper">
     <app-sidemenu 
+      #sidemenuComponent
       [activeSessionId]="activeSessionId()"
       (closeSidebar)="closeSidebar()" 
       (sessionSelected)="onSessionSelected($event)"
@@ -28,7 +29,10 @@
 
     <!-- Chat Area -->
     <div class="chat-wrapper">
-      <app-chat #chatComponent />
+      <app-chat 
+        #chatComponent 
+        (historyUpdated)="onHistoryUpdated()" 
+      />
     </div>
   </main>
 </div>

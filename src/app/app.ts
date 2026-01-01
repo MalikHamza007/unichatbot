@@ -10,11 +10,12 @@ import { Chat } from './shared/components/chat/chat';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class App {
-  protected readonly title = signal('University AI Assistant');
+  protected readonly title = signal('University of Wolverhampton AI Assitant');
   protected readonly sidebarOpen = signal(false);
   protected readonly activeSessionId = signal(localStorage.getItem('chat_session_id') || '');
   
   private readonly chatComponent = viewChild<Chat>('chatComponent');
+  private readonly sidemenuComponent = viewChild<Sidemenu>('sidemenuComponent');
 
   toggleSidebar(): void {
     this.sidebarOpen.update(open => !open);
@@ -33,5 +34,11 @@ export class App {
     this.chatComponent()?.startNewChat();
     const newSessionId = localStorage.getItem('chat_session_id') || '';
     this.activeSessionId.set(newSessionId);
+  }
+
+  // Called whenever Chat reports that history has changed (e.g., first bot
+  // response in a new session). Refresh the Recent Chats list immediately.
+  onHistoryUpdated(): void {
+    this.sidemenuComponent()?.loadChatSessions();
   }
 }

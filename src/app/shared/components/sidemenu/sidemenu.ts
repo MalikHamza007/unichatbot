@@ -9,8 +9,16 @@ export interface ChatSession {
   updated_at?: string;
 }
 
-export interface HistoryListResponse {
-  sessions?: ChatSession[];
+// Shape of history items returned by /chat/university/history/
+interface HistoryItem {
+  id: number;
+  user_query: string;
+  bot_response: string;
+  model_used: string;
+  detected_intent: string;
+  confidence_score: number;
+  session_id: string;
+  created_at: string;
 }
 
 @Component({
@@ -40,13 +48,55 @@ export class Sidemenu implements OnInit {
     this.isLoading.set(true);
     this.error.set(null);
 
-    this.apiService.get<HistoryListResponse>('/chat/university/history/').subscribe({
+    this.apiService.get<HistoryItem[]>('/chat/university/history/').subscribe({
       next: (response) => {
-        if (response.sessions && Array.isArray(response.sessions)) {
-          this.chatList.set(response.sessions);
+        if (Array.isArray(response) && response.length > 0) {
+          const sessionsMap = new Map<string, ChatSession>();
+
+          response.forEach((item) => {
+            const sessionId = item.session_id;
+            // Ignore items without a session id for the recent chats list
+            if (!sessionId) {
+              return;
+            }
+
+            const createdAt = item.created_at;
+            const createdDate = new Date(createdAt);
+
+            const existing = sessionsMap.get(sessionId);
+            if (!existing) {
+              // First message for this session: use its question as the title
+              sessionsMap.set(sessionId, {
+                session_id: sessionId,
+                title: item.user_query,
+                created_at: createdAt,
+                updated_at: createdAt,
+              });
+            } else {
+              // Update earliest created_at and title if this item is older
+              if (existing.created_at && createdDate < new Date(existing.created_at)) {
+                existing.created_at = createdAt;
+                existing.title = item.user_query;
+              }
+
+              // Always track the latest activity time
+              if (!existing.updated_at || createdDate > new Date(existing.updated_at)) {
+                existing.updated_at = createdAt;
+              }
+            }
+          });
+
+          const sessions = Array.from(sessionsMap.values()).sort((a, b) => {
+            const aTime = new Date(a.updated_at || a.created_at || '').getTime();
+            const bTime = new Date(b.updated_at || b.created_at || '').getTime();
+            return bTime - aTime; // most recent first
+          });
+
+          this.chatList.set(sessions);
         } else {
           this.chatList.set([]);
         }
+
         this.isLoading.set(false);
       },
       error: (err) => {
@@ -69,7 +119,10 @@ export class Sidemenu implements OnInit {
 
   onDeleteChat(event: Event, sessionId: string): void {
     event.stopPropagation();
-    
+    const confirmed = window.confirm('Are you sure you want to delete this conversation?');
+    if (!confirmed) {
+      return;
+    }
     this.apiService.delete<void>('/chat/university/history/', {
       session_id: sessionId
     }).subscribe({

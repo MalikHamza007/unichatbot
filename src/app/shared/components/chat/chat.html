@@ -41,7 +41,21 @@
                 </div>
                 }
                 <div class="message-bubble">
+                    @if (message.sender === 'bot') {
+                    <p class="message-content" [innerHTML]="message.content"></p>
+                    @if (message.intent || message.confidence !== undefined) {
+                    <div class="message-meta">
+                        @if (message.intent) {
+                        <span class="meta-pill intent-pill">Intent: {{ message.intent }}</span>
+                        }
+                        @if (message.confidence !== undefined) {
+                        <span class="meta-pill confidence-pill">Confidence: {{ (message.confidence * 100).toFixed(0) }}%</span>
+                        }
+                    </div>
+                    }
+                    } @else {
                     <p class="message-content">{{ message.content }}</p>
+                    }
                 </div>
                 @if (message.sender === 'user') {
                 <div class="avatar user-avatar">
